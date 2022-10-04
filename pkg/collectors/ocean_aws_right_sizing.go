@@ -158,17 +158,3 @@ func (c *OceanAWSRightSizingCollector) collectContainerSuggestions(
 		collectGaugeValue(ch, c.suggestedContainerMemory, *suggestion.SuggestedMemory, labelValues)
 	}
 }
-
-func collectGaugeValue(
-	ch chan<- prometheus.Metric,
-	desc *prometheus.Desc,
-	value float64,
-	labelValues []string,
-) {
-	ch <- prometheus.MustNewConstMetric(
-		desc,
-		prometheus.GaugeValue,
-		value,
-		labelValues...,
-	)
-}

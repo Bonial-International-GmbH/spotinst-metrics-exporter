@@ -25,7 +25,11 @@ type OceanAWSRightSizingCollector struct {
 
 // Creates a new OceanAWSRightSizingCollector for collecting the right sizing
 // suggestions for the provided list of Ocean clusters.
-func NewOceanAWSRightSizingCollector(ctx context.Context, client aws.Service, clusters []*aws.Cluster) *OceanAWSRightSizingCollector {
+func NewOceanAWSRightSizingCollector(
+	ctx context.Context,
+	client aws.Service,
+	clusters []*aws.Cluster,
+) *OceanAWSRightSizingCollector {
 	collector := &OceanAWSRightSizingCollector{
 		ctx:      ctx,
 		client:   client,
@@ -120,33 +124,10 @@ func (c *OceanAWSRightSizingCollector) collectSuggestions(
 	for _, suggestion := range suggestions {
 		labelValues := []string{oceanID, *suggestion.ResourceType, *suggestion.Namespace, *suggestion.ResourceName}
 
-		ch <- prometheus.MustNewConstMetric(
-			c.requestedCPU,
-			prometheus.GaugeValue,
-			*suggestion.RequestedCPU,
-			labelValues...,
-		)
-
-		ch <- prometheus.MustNewConstMetric(
-			c.suggestedCPU,
-			prometheus.GaugeValue,
-			*suggestion.SuggestedCPU,
-			labelValues...,
-		)
-
-		ch <- prometheus.MustNewConstMetric(
-			c.requestedMemory,
-			prometheus.GaugeValue,
-			*suggestion.RequestedMemory,
-			labelValues...,
-		)
-
-		ch <- prometheus.MustNewConstMetric(
-			c.suggestedMemory,
-			prometheus.GaugeValue,
-			*suggestion.SuggestedMemory,
-			labelValues...,
-		)
+		collectGaugeValue(ch, c.requestedCPU, *suggestion.RequestedCPU, labelValues)
+		collectGaugeValue(ch, c.suggestedCPU, *suggestion.SuggestedCPU, labelValues)
+		collectGaugeValue(ch, c.requestedMemory, *suggestion.RequestedMemory, labelValues)
+		collectGaugeValue(ch, c.suggestedMemory, *suggestion.SuggestedMemory, labelValues)
 
 		c.collectContainerSuggestions(ch, suggestion.Containers, labelValues)
 	}
@@ -160,32 +141,23 @@ func (c *OceanAWSRightSizingCollector) collectContainerSuggestions(
 	for _, suggestion := range suggestions {
 		labelValues := append(workloadLabelValues, *suggestion.Name)
 
-		ch <- prometheus.MustNewConstMetric(
-			c.requestedContainerCPU,
-			prometheus.GaugeValue,
-			*suggestion.RequestedCPU,
-			labelValues...,
-		)
-
-		ch <- prometheus.MustNewConstMetric(
-			c.suggestedContainerCPU,
-			prometheus.GaugeValue,
-			*suggestion.SuggestedCPU,
-			labelValues...,
-		)
-
-		ch <- prometheus.MustNewConstMetric(
-			c.requestedContainerMemory,
-			prometheus.GaugeValue,
-			*suggestion.RequestedCPU,
-			labelValues...,
-		)
-
-		ch <- prometheus.MustNewConstMetric(
-			c.suggestedContainerMemory,
-			prometheus.GaugeValue,
-			*suggestion.SuggestedMemory,
-			labelValues...,
-		)
+		collectGaugeValue(ch, c.requestedContainerCPU, *suggestion.RequestedCPU, labelValues)
+		collectGaugeValue(ch, c.suggestedContainerCPU, *suggestion.SuggestedCPU, labelValues)
+		collectGaugeValue(ch, c.requestedContainerMemory, *suggestion.RequestedMemory, labelValues)
+		collectGaugeValue(ch, c.suggestedContainerMemory, *suggestion.SuggestedMemory, labelValues)
 	}
+}
+
+func collectGaugeValue(
+	ch chan<- prometheus.Metric,
+	desc *prometheus.Desc,
+	value float64,
+	labelValues []string,
+) {
+	ch <- prometheus.MustNewConstMetric(
+		desc,
+		prometheus.GaugeValue,
+		value,
+		labelValues...,
+	)
 }

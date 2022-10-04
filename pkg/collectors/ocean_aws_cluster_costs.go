@@ -26,7 +26,11 @@ type OceanAWSClusterCostsCollector struct {
 
 // Creates a new OceanAWSClusterCostsCollector for collecting the costs of the
 // provided list of Ocean clusters.
-func NewOceanAWSClusterCostsCollector(ctx context.Context, client mcs.Service, clusters []*aws.Cluster) *OceanAWSClusterCostsCollector {
+func NewOceanAWSClusterCostsCollector(
+	ctx context.Context,
+	client mcs.Service,
+	clusters []*aws.Cluster,
+) *OceanAWSClusterCostsCollector {
 	collector := &OceanAWSClusterCostsCollector{
 		ctx:      ctx,
 		client:   client,
@@ -104,50 +108,50 @@ func (c *OceanAWSClusterCostsCollector) Collect(ch chan<- prometheus.Metric) {
 			continue
 		}
 
-		c.collectClusterCosts(ch, *cluster.ID, output.ClusterCosts)
+		c.collectClusterCosts(ch, output.ClusterCosts, *cluster.ID)
 	}
 }
 
-func (c *OceanAWSClusterCostsCollector) collectClusterCosts(ch chan<- prometheus.Metric, oceanID string, clusters []*mcs.ClusterCost) {
+func (c *OceanAWSClusterCostsCollector) collectClusterCosts(
+	ch chan<- prometheus.Metric,
+	clusters []*mcs.ClusterCost,
+	oceanID string,
+) {
+	labelValues := []string{oceanID}
+
 	for _, cluster := range clusters {
-		ch <- prometheus.MustNewConstMetric(
-			c.clusterCost,
-			prometheus.GaugeValue,
-			*cluster.TotalCost,
-			oceanID,
-		)
+		collectGaugeValue(ch, c.clusterCost, *cluster.TotalCost, labelValues)
 
-		c.collectNamespaceCosts(ch, oceanID, cluster.Namespaces)
+		c.collectNamespaceCosts(ch, cluster.Namespaces, labelValues)
 	}
 }
 
-func (c *OceanAWSClusterCostsCollector) collectNamespaceCosts(ch chan<- prometheus.Metric, oceanID string, namespaces []*mcs.Namespace) {
+func (c *OceanAWSClusterCostsCollector) collectNamespaceCosts(
+	ch chan<- prometheus.Metric,
+	namespaces []*mcs.Namespace,
+	clusterLabelValues []string,
+) {
 	for _, namespace := range namespaces {
-		labelValues := []string{oceanID, *namespace.Namespace}
+		labelValues := append(clusterLabelValues, *namespace.Namespace)
 
-		ch <- prometheus.MustNewConstMetric(
-			c.namespaceCost,
-			prometheus.GaugeValue,
-			*namespace.Cost,
-			labelValues...,
-		)
+		collectGaugeValue(ch, c.namespaceCost, *namespace.Cost, labelValues)
 
-		collectWorkloadCosts(ch, oceanID, namespace.Deployments, c.deploymentCost)
-		collectWorkloadCosts(ch, oceanID, namespace.DaemonSets, c.daemonSetCost)
-		collectWorkloadCosts(ch, oceanID, namespace.StatefulSets, c.statefulSetCost)
-		collectWorkloadCosts(ch, oceanID, namespace.Jobs, c.jobCost)
+		collectWorkloadCosts(ch, c.deploymentCost, namespace.Deployments, labelValues)
+		collectWorkloadCosts(ch, c.daemonSetCost, namespace.DaemonSets, labelValues)
+		collectWorkloadCosts(ch, c.statefulSetCost, namespace.StatefulSets, labelValues)
+		collectWorkloadCosts(ch, c.jobCost, namespace.Jobs, labelValues)
 	}
 }
 
-func collectWorkloadCosts(ch chan<- prometheus.Metric, oceanID string, resources []*mcs.Resource, desc *prometheus.Desc) {
+func collectWorkloadCosts(
+	ch chan<- prometheus.Metric,
+	desc *prometheus.Desc,
+	resources []*mcs.Resource,
+	namespaceLabelValues []string,
+) {
 	for _, resource := range resources {
-		labelValues := []string{oceanID, *resource.Namespace, *resource.Name}
+		labelValues := append(namespaceLabelValues, *resource.Name)
 
-		ch <- prometheus.MustNewConstMetric(
-			desc,
-			prometheus.GaugeValue,
-			*resource.Cost,
-			labelValues...,
-		)
+		collectGaugeValue(ch, desc, *resource.Cost, labelValues)
 	}
 }

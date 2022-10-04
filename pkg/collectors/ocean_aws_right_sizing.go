@@ -8,10 +8,21 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 )
 
+// OceanAWSResourceSuggestionsLister is the interface for something that can
+// list Ocean resource suggestions.
+//
+// It is implemented by the Spotinst *aws.ServiceOp client.
+type OceanAWSResourceSuggestionsLister interface {
+	ListOceanResourceSuggestions(
+		context.Context,
+		*aws.ListOceanResourceSuggestionsInput,
+	) (*aws.ListOceanResourceSuggestionsOutput, error)
+}
+
 // A prometheus collector for the right sizing suggestions of Spotinst Ocean clusters on AWS.
 type OceanAWSRightSizingCollector struct {
 	ctx                      context.Context
-	client                   aws.Service
+	client                   OceanAWSResourceSuggestionsLister
 	clusters                 []*aws.Cluster
 	requestedCPU             *prometheus.Desc
 	suggestedCPU             *prometheus.Desc

@@ -11,10 +11,17 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 )
 
+// OceanAWSClusterCostsFetcher is the interface for fetching Ocean cluster costs.
+//
+// It is implemented by the Spotinst *mcs.ServiceOp client.
+type OceanAWSClusterCostsFetcher interface {
+	GetClusterCosts(context.Context, *mcs.ClusterCostInput) (*mcs.ClusterCostOutput, error)
+}
+
 // A prometheus collector for the cost of Spotinst Ocean clusters on AWS.
 type OceanAWSClusterCostsCollector struct {
 	ctx             context.Context
-	client          mcs.Service
+	client          OceanAWSClusterCostsFetcher
 	clusters        []*aws.Cluster
 	clusterCost     *prometheus.Desc
 	namespaceCost   *prometheus.Desc

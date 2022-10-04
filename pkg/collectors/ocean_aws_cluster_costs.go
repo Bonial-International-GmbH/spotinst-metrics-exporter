@@ -2,7 +2,6 @@ package collectors
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -18,7 +17,8 @@ type OceanAWSClusterCostsFetcher interface {
 	GetClusterCosts(context.Context, *mcs.ClusterCostInput) (*mcs.ClusterCostOutput, error)
 }
 
-// A prometheus collector for the cost of Spotinst Ocean clusters on AWS.
+// OceanAWSClusterCostsCollector is a prometheus collector for the cost of
+// Spotinst Ocean clusters on AWS.
 type OceanAWSClusterCostsCollector struct {
 	ctx             context.Context
 	client          OceanAWSClusterCostsFetcher
@@ -31,8 +31,8 @@ type OceanAWSClusterCostsCollector struct {
 	jobCost         *prometheus.Desc
 }
 
-// Creates a new OceanAWSClusterCostsCollector for collecting the costs of the
-// provided list of Ocean clusters.
+// NewOceanAWSClusterCostsCollector creates a new OceanAWSClusterCostsCollector
+// for collecting the costs of the provided list of Ocean clusters.
 func NewOceanAWSClusterCostsCollector(
 	ctx context.Context,
 	client mcs.Service,
@@ -111,7 +111,7 @@ func (c *OceanAWSClusterCostsCollector) Collect(ch chan<- prometheus.Metric) {
 
 		output, err := c.client.GetClusterCosts(c.ctx, input)
 		if err != nil {
-			log.Println(err)
+			logger.Error(err, "failed to fetch cluster costs", "ocean", *cluster.ID)
 			continue
 		}
 

@@ -2,7 +2,6 @@ package collectors
 
 import (
 	"context"
-	"log"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
@@ -19,7 +18,8 @@ type OceanAWSResourceSuggestionsLister interface {
 	) (*aws.ListOceanResourceSuggestionsOutput, error)
 }
 
-// A prometheus collector for the right sizing suggestions of Spotinst Ocean clusters on AWS.
+// OceanAWSRightSizingCollector is a prometheus collector for the right sizing
+// suggestions of Spotinst Ocean clusters on AWS.
 type OceanAWSRightSizingCollector struct {
 	ctx                      context.Context
 	client                   OceanAWSResourceSuggestionsLister
@@ -34,8 +34,9 @@ type OceanAWSRightSizingCollector struct {
 	suggestedContainerMemory *prometheus.Desc
 }
 
-// Creates a new OceanAWSRightSizingCollector for collecting the right sizing
-// suggestions for the provided list of Ocean clusters.
+// NewOceanAWSRightSizingCollector creates a new OceanAWSRightSizingCollector
+// for collecting the right sizing suggestions for the provided list of Ocean
+// clusters.
 func NewOceanAWSRightSizingCollector(
 	ctx context.Context,
 	client aws.Service,
@@ -119,7 +120,7 @@ func (c *OceanAWSRightSizingCollector) Collect(ch chan<- prometheus.Metric) {
 
 		output, err := c.client.ListOceanResourceSuggestions(c.ctx, input)
 		if err != nil {
-			log.Println(err)
+			logger.Error(err, "failed to list resource suggestions", "ocean", *cluster.ID)
 			continue
 		}
 

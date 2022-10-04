@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
+	"fmt"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,17 +11,35 @@ import (
 	"time"
 
 	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/collectors"
+	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/log"
+	"github.com/go-logr/logr"
+	"github.com/go-logr/zapr"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/spotinst/spotinst-sdk-go/service/mcs"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst/session"
+	"go.uber.org/zap"
 )
 
-var addr = flag.String("listen-address", ":8080", "The address to listen on for HTTP requests.")
+var logger logr.Logger
+
+func init() {
+	// Set up a production logger which will write JSON logs.
+	zapLog, err := zap.NewProduction()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "failed to setup logger: %v", err)
+		os.Exit(1)
+	}
+
+	log.SetLogger(zapr.NewLogger(zapLog))
+
+	logger = log.Logger()
+}
 
 func main() {
+	addr := flag.String("listen-address", ":8080", "The address to listen on for HTTP requests.")
 	flag.Parse()
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -34,7 +52,8 @@ func main() {
 
 	clusters, err := getOceanAWSClusters(ctx, oceanClient)
 	if err != nil {
-		log.Fatal(err)
+		logger.Error(err, "failed to fetch ocean clusters")
+		os.Exit(1)
 	}
 
 	registry := prometheus.NewRegistry()
@@ -44,41 +63,43 @@ func main() {
 	handler := http.NewServeMux()
 	handler.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{EnableOpenMetrics: true}))
 
-	if err := listenAndServe(ctx, handler, *addr); err != nil {
-		log.Fatal(err)
-	}
+	listenAndServe(ctx, handler, *addr)
 }
 
 func handleSignals(cancelFunc func()) {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGTERM, os.Interrupt)
 	<-signals
-	log.Println("received signal, terminating...")
+	logger.Info("received signal, terminating...")
 	cancelFunc()
 }
 
-func listenAndServe(ctx context.Context, handler http.Handler, addr string) error {
+func listenAndServe(ctx context.Context, handler http.Handler, addr string) {
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: handler,
 	}
 
 	go func() {
-		log.Printf("listening on %s", addr)
+		logger.Info("starting server", "addr", addr)
 
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s", err)
+			logger.Error(err, "failed to start server")
+			os.Exit(1)
 		}
 	}()
 
 	<-ctx.Done()
 
-	log.Println("shutting down server...")
+	logger.Info("shutting down server...")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	return srv.Shutdown(ctx)
+	if err := srv.Shutdown(ctx); err != nil {
+		logger.Error(err, "failed to shutdown HTTP server")
+		os.Exit(1)
+	}
 }
 
 func getOceanAWSClusters(ctx context.Context, client ocean.Service) ([]*aws.Cluster, error) {

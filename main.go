@@ -39,6 +39,7 @@ func main() {
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(collectors.NewOceanAWSClusterCostsCollector(ctx, mcsClient, clusters))
+	registry.MustRegister(collectors.NewOceanAWSRightSizingCollector(ctx, oceanClient.CloudProviderAWS(), clusters))
 
 	handler := http.NewServeMux()
 	handler.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{EnableOpenMetrics: true}))

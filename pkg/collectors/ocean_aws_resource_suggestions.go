@@ -7,11 +7,11 @@ import (
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 )
 
-// OceanAWSResourceSuggestionsLister is the interface for something that can
+// OceanAWSResourceSuggestionsClient is the interface for something that can
 // list Ocean resource suggestions.
 //
 // It is implemented by the Spotinst *aws.ServiceOp client.
-type OceanAWSResourceSuggestionsLister interface {
+type OceanAWSResourceSuggestionsClient interface {
 	ListOceanResourceSuggestions(
 		context.Context,
 		*aws.ListOceanResourceSuggestionsInput,
@@ -22,7 +22,7 @@ type OceanAWSResourceSuggestionsLister interface {
 // resource suggestions of Spotinst Ocean clusters on AWS.
 type OceanAWSResourceSuggestionsCollector struct {
 	ctx                      context.Context
-	client                   OceanAWSResourceSuggestionsLister
+	client                   OceanAWSResourceSuggestionsClient
 	clusters                 []*aws.Cluster
 	requestedCPU             *prometheus.Desc
 	suggestedCPU             *prometheus.Desc
@@ -39,7 +39,7 @@ type OceanAWSResourceSuggestionsCollector struct {
 // for the provided list of Ocean clusters.
 func NewOceanAWSResourceSuggestionsCollector(
 	ctx context.Context,
-	client aws.Service,
+	client OceanAWSResourceSuggestionsClient,
 	clusters []*aws.Cluster,
 ) *OceanAWSResourceSuggestionsCollector {
 	collector := &OceanAWSResourceSuggestionsCollector{

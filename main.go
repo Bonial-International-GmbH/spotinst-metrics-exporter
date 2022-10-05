@@ -48,9 +48,9 @@ func main() {
 	sess := session.New()
 	mcsClient := mcs.New(sess)
 
-	oceanClient := ocean.New(sess)
+	oceanAWSClient := ocean.New(sess).CloudProviderAWS()
 
-	clusters, err := getOceanAWSClusters(ctx, oceanClient)
+	clusters, err := getOceanAWSClusters(ctx, oceanAWSClient)
 	if err != nil {
 		logger.Error(err, "failed to fetch ocean clusters")
 		os.Exit(1)
@@ -58,7 +58,7 @@ func main() {
 
 	registry := prometheus.NewRegistry()
 	registry.MustRegister(collectors.NewOceanAWSClusterCostsCollector(ctx, mcsClient, clusters))
-	registry.MustRegister(collectors.NewOceanAWSRightSizingCollector(ctx, oceanClient.CloudProviderAWS(), clusters))
+	registry.MustRegister(collectors.NewOceanAWSResourceSuggestionsCollector(ctx, oceanAWSClient, clusters))
 
 	handler := http.NewServeMux()
 	handler.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{EnableOpenMetrics: true}))
@@ -102,8 +102,8 @@ func listenAndServe(ctx context.Context, handler http.Handler, addr string) {
 	}
 }
 
-func getOceanAWSClusters(ctx context.Context, client ocean.Service) ([]*aws.Cluster, error) {
-	output, err := client.CloudProviderAWS().ListClusters(ctx, &aws.ListClustersInput{})
+func getOceanAWSClusters(ctx context.Context, client aws.Service) ([]*aws.Cluster, error) {
+	output, err := client.ListClusters(ctx, &aws.ListClustersInput{})
 	if err != nil {
 		return nil, err
 	}

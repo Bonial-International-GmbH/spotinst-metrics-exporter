@@ -18,9 +18,9 @@ type OceanAWSResourceSuggestionsLister interface {
 	) (*aws.ListOceanResourceSuggestionsOutput, error)
 }
 
-// OceanAWSRightSizingCollector is a prometheus collector for the right sizing
-// suggestions of Spotinst Ocean clusters on AWS.
-type OceanAWSRightSizingCollector struct {
+// OceanAWSResourceSuggestionsCollector is a prometheus collector for the
+// resource suggestions of Spotinst Ocean clusters on AWS.
+type OceanAWSResourceSuggestionsCollector struct {
 	ctx                      context.Context
 	client                   OceanAWSResourceSuggestionsLister
 	clusters                 []*aws.Cluster
@@ -34,15 +34,15 @@ type OceanAWSRightSizingCollector struct {
 	suggestedContainerMemory *prometheus.Desc
 }
 
-// NewOceanAWSRightSizingCollector creates a new OceanAWSRightSizingCollector
-// for collecting the right sizing suggestions for the provided list of Ocean
-// clusters.
-func NewOceanAWSRightSizingCollector(
+// NewOceanAWSResourceSuggestionsCollector creates a new
+// OceanAWSResourceSuggestionsCollector for collecting the resource suggestions
+// for the provided list of Ocean clusters.
+func NewOceanAWSResourceSuggestionsCollector(
 	ctx context.Context,
 	client aws.Service,
 	clusters []*aws.Cluster,
-) *OceanAWSRightSizingCollector {
-	collector := &OceanAWSRightSizingCollector{
+) *OceanAWSResourceSuggestionsCollector {
+	collector := &OceanAWSResourceSuggestionsCollector{
 		ctx:      ctx,
 		client:   client,
 		clusters: clusters,
@@ -100,7 +100,7 @@ func NewOceanAWSRightSizingCollector(
 }
 
 // Describe implements the prometheus.Collector interface.
-func (c *OceanAWSRightSizingCollector) Describe(ch chan<- *prometheus.Desc) {
+func (c *OceanAWSResourceSuggestionsCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- c.requestedCPU
 	ch <- c.suggestedCPU
 	ch <- c.requestedMemory
@@ -112,7 +112,7 @@ func (c *OceanAWSRightSizingCollector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 // Collect implements the prometheus.Collector interface.
-func (c *OceanAWSRightSizingCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *OceanAWSResourceSuggestionsCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, cluster := range c.clusters {
 		input := &aws.ListOceanResourceSuggestionsInput{
 			OceanID: cluster.ID,
@@ -128,7 +128,7 @@ func (c *OceanAWSRightSizingCollector) Collect(ch chan<- prometheus.Metric) {
 	}
 }
 
-func (c *OceanAWSRightSizingCollector) collectSuggestions(
+func (c *OceanAWSResourceSuggestionsCollector) collectSuggestions(
 	ch chan<- prometheus.Metric,
 	suggestions []*aws.ResourceSuggestion,
 	oceanID string,
@@ -145,7 +145,7 @@ func (c *OceanAWSRightSizingCollector) collectSuggestions(
 	}
 }
 
-func (c *OceanAWSRightSizingCollector) collectContainerSuggestions(
+func (c *OceanAWSResourceSuggestionsCollector) collectContainerSuggestions(
 	ch chan<- prometheus.Metric,
 	suggestions []*aws.ContainerResourceSuggestion,
 	workloadLabelValues []string,

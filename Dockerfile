@@ -7,7 +7,7 @@ RUN apk --update --no-cache add git make
 ENV CGO_ENABLED=0
 
 COPY go.mod go.mod
-# COPY go.sum go.sum
+COPY go.sum go.sum
 COPY Makefile Makefile
 
 RUN go mod download

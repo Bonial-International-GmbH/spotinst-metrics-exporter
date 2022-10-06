@@ -61,6 +61,7 @@ func main() {
 	registry.MustRegister(collectors.NewOceanAWSResourceSuggestionsCollector(ctx, oceanAWSClient, clusters))
 
 	handler := http.NewServeMux()
+	handler.HandleFunc("/healthz", healthzHandler)
 	handler.Handle("/metrics", promhttp.HandlerFor(registry, promhttp.HandlerOpts{EnableOpenMetrics: true}))
 
 	listenAndServe(ctx, handler, *addr)
@@ -109,4 +110,10 @@ func getOceanAWSClusters(ctx context.Context, client aws.Service) ([]*aws.Cluste
 	}
 
 	return output.Clusters, nil
+}
+
+func healthzHandler(w http.ResponseWriter, r *http.Request) {
+	if _, err := w.Write([]byte("ok")); err != nil {
+		logger.Error(err, "failed to write health check status")
+	}
 }

@@ -1,3 +1,4 @@
+// Package log holds the global logger instance.
 package log
 
 import (

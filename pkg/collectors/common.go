@@ -1,3 +1,4 @@
+// Package collectors contains Prometheus collectors for Spotinst metrics.
 package collectors
 
 import (

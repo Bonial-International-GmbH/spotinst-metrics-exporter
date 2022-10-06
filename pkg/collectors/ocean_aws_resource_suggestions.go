@@ -5,6 +5,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
+	"github.com/spotinst/spotinst-sdk-go/spotinst"
 )
 
 // OceanAWSResourceSuggestionsClient is the interface for something that can
@@ -118,13 +119,15 @@ func (c *OceanAWSResourceSuggestionsCollector) Collect(ch chan<- prometheus.Metr
 			OceanID: cluster.ID,
 		}
 
+		clusterID := spotinst.StringValue(cluster.ID)
+
 		output, err := c.client.ListOceanResourceSuggestions(c.ctx, input)
 		if err != nil {
-			logger.Error(err, "failed to list resource suggestions", "ocean", *cluster.ID)
+			logger.Error(err, "failed to list resource suggestions", "ocean", clusterID)
 			continue
 		}
 
-		c.collectSuggestions(ch, output.Suggestions, *cluster.ID)
+		c.collectSuggestions(ch, output.Suggestions, clusterID)
 	}
 }
 
@@ -134,12 +137,17 @@ func (c *OceanAWSResourceSuggestionsCollector) collectSuggestions(
 	oceanID string,
 ) {
 	for _, suggestion := range suggestions {
-		labelValues := []string{oceanID, *suggestion.ResourceType, *suggestion.Namespace, *suggestion.ResourceName}
+		labelValues := []string{
+			oceanID,
+			spotinst.StringValue(suggestion.ResourceType),
+			spotinst.StringValue(suggestion.Namespace),
+			spotinst.StringValue(suggestion.ResourceName),
+		}
 
-		collectGaugeValue(ch, c.requestedCPU, *suggestion.RequestedCPU, labelValues)
-		collectGaugeValue(ch, c.suggestedCPU, *suggestion.SuggestedCPU, labelValues)
-		collectGaugeValue(ch, c.requestedMemory, *suggestion.RequestedMemory, labelValues)
-		collectGaugeValue(ch, c.suggestedMemory, *suggestion.SuggestedMemory, labelValues)
+		collectGaugeValue(ch, c.requestedCPU, spotinst.Float64Value(suggestion.RequestedCPU), labelValues)
+		collectGaugeValue(ch, c.suggestedCPU, spotinst.Float64Value(suggestion.SuggestedCPU), labelValues)
+		collectGaugeValue(ch, c.requestedMemory, spotinst.Float64Value(suggestion.RequestedMemory), labelValues)
+		collectGaugeValue(ch, c.suggestedMemory, spotinst.Float64Value(suggestion.SuggestedMemory), labelValues)
 
 		c.collectContainerSuggestions(ch, suggestion.Containers, labelValues)
 	}
@@ -151,11 +159,11 @@ func (c *OceanAWSResourceSuggestionsCollector) collectContainerSuggestions(
 	workloadLabelValues []string,
 ) {
 	for _, suggestion := range suggestions {
-		labelValues := append(workloadLabelValues, *suggestion.Name)
+		labelValues := append(workloadLabelValues, spotinst.StringValue(suggestion.Name))
 
-		collectGaugeValue(ch, c.requestedContainerCPU, *suggestion.RequestedCPU, labelValues)
-		collectGaugeValue(ch, c.suggestedContainerCPU, *suggestion.SuggestedCPU, labelValues)
-		collectGaugeValue(ch, c.requestedContainerMemory, *suggestion.RequestedMemory, labelValues)
-		collectGaugeValue(ch, c.suggestedContainerMemory, *suggestion.SuggestedMemory, labelValues)
+		collectGaugeValue(ch, c.requestedContainerCPU, spotinst.Float64Value(suggestion.RequestedCPU), labelValues)
+		collectGaugeValue(ch, c.suggestedContainerCPU, spotinst.Float64Value(suggestion.SuggestedCPU), labelValues)
+		collectGaugeValue(ch, c.requestedContainerMemory, spotinst.Float64Value(suggestion.RequestedMemory), labelValues)
+		collectGaugeValue(ch, c.suggestedContainerMemory, spotinst.Float64Value(suggestion.SuggestedMemory), labelValues)
 	}
 }

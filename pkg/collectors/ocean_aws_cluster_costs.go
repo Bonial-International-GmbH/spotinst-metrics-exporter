@@ -109,13 +109,15 @@ func (c *OceanAWSClusterCostsCollector) Collect(ch chan<- prometheus.Metric) {
 			ToDate:    toDate,
 		}
 
+		clusterID := spotinst.StringValue(cluster.ID)
+
 		output, err := c.client.GetClusterCosts(c.ctx, input)
 		if err != nil {
-			logger.Error(err, "failed to fetch cluster costs", "ocean", *cluster.ID)
+			logger.Error(err, "failed to fetch cluster costs", "ocean", clusterID)
 			continue
 		}
 
-		c.collectClusterCosts(ch, output.ClusterCosts, *cluster.ID)
+		c.collectClusterCosts(ch, output.ClusterCosts, clusterID)
 	}
 }
 
@@ -127,7 +129,7 @@ func (c *OceanAWSClusterCostsCollector) collectClusterCosts(
 	labelValues := []string{oceanID}
 
 	for _, cluster := range clusters {
-		collectGaugeValue(ch, c.clusterCost, *cluster.TotalCost, labelValues)
+		collectGaugeValue(ch, c.clusterCost, spotinst.Float64Value(cluster.TotalCost), labelValues)
 
 		c.collectNamespaceCosts(ch, cluster.Namespaces, labelValues)
 	}
@@ -139,9 +141,9 @@ func (c *OceanAWSClusterCostsCollector) collectNamespaceCosts(
 	clusterLabelValues []string,
 ) {
 	for _, namespace := range namespaces {
-		labelValues := append(clusterLabelValues, *namespace.Namespace)
+		labelValues := append(clusterLabelValues, spotinst.StringValue(namespace.Namespace))
 
-		collectGaugeValue(ch, c.namespaceCost, *namespace.Cost, labelValues)
+		collectGaugeValue(ch, c.namespaceCost, spotinst.Float64Value(namespace.Cost), labelValues)
 
 		collectWorkloadCosts(ch, c.deploymentCost, namespace.Deployments, labelValues)
 		collectWorkloadCosts(ch, c.daemonSetCost, namespace.DaemonSets, labelValues)
@@ -157,8 +159,8 @@ func collectWorkloadCosts(
 	namespaceLabelValues []string,
 ) {
 	for _, resource := range resources {
-		labelValues := append(namespaceLabelValues, *resource.Name)
+		labelValues := append(namespaceLabelValues, spotinst.StringValue(resource.Name))
 
-		collectGaugeValue(ch, desc, *resource.Cost, labelValues)
+		collectGaugeValue(ch, desc, spotinst.Float64Value(resource.Cost), labelValues)
 	}
 }

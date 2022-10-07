@@ -25,10 +25,10 @@ type OceanAWSResourceSuggestionsCollector struct {
 	ctx                      context.Context
 	client                   OceanAWSResourceSuggestionsClient
 	clusters                 []*aws.Cluster
-	requestedCPU             *prometheus.Desc
-	suggestedCPU             *prometheus.Desc
-	requestedMemory          *prometheus.Desc
-	suggestedMemory          *prometheus.Desc
+	requestedWorkloadCPU     *prometheus.Desc
+	suggestedWorkloadCPU     *prometheus.Desc
+	requestedWorkloadMemory  *prometheus.Desc
+	suggestedWorkloadMemory  *prometheus.Desc
 	requestedContainerCPU    *prometheus.Desc
 	suggestedContainerCPU    *prometheus.Desc
 	requestedContainerMemory *prometheus.Desc
@@ -47,26 +47,26 @@ func NewOceanAWSResourceSuggestionsCollector(
 		ctx:      ctx,
 		client:   client,
 		clusters: clusters,
-		requestedCPU: prometheus.NewDesc(
-			prometheus.BuildFQName("spotinst", "ocean_aws", "cpu_requested"),
+		requestedWorkloadCPU: prometheus.NewDesc(
+			prometheus.BuildFQName("spotinst", "ocean_aws", "workload_cpu_requested"),
 			"The number of actual CPU units requested by a workload",
 			[]string{"ocean", "resource", "namespace", "name"},
 			nil,
 		),
-		suggestedCPU: prometheus.NewDesc(
-			prometheus.BuildFQName("spotinst", "ocean_aws", "cpu_suggested"),
+		suggestedWorkloadCPU: prometheus.NewDesc(
+			prometheus.BuildFQName("spotinst", "ocean_aws", "workload_cpu_suggested"),
 			"The number of CPU units suggested for a workload",
 			[]string{"ocean", "resource", "namespace", "name"},
 			nil,
 		),
-		requestedMemory: prometheus.NewDesc(
-			prometheus.BuildFQName("spotinst", "ocean_aws", "memory_requested"),
+		requestedWorkloadMemory: prometheus.NewDesc(
+			prometheus.BuildFQName("spotinst", "ocean_aws", "workload_memory_requested"),
 			"The number of actual memory units requested by a workload",
 			[]string{"ocean", "resource", "namespace", "name"},
 			nil,
 		),
-		suggestedMemory: prometheus.NewDesc(
-			prometheus.BuildFQName("spotinst", "ocean_aws", "memory_suggested"),
+		suggestedWorkloadMemory: prometheus.NewDesc(
+			prometheus.BuildFQName("spotinst", "ocean_aws", "workload_memory_suggested"),
 			"The number of memory units suggested for a workload",
 			[]string{"ocean", "resource", "namespace", "name"},
 			nil,
@@ -102,10 +102,10 @@ func NewOceanAWSResourceSuggestionsCollector(
 
 // Describe implements the prometheus.Collector interface.
 func (c *OceanAWSResourceSuggestionsCollector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- c.requestedCPU
-	ch <- c.suggestedCPU
-	ch <- c.requestedMemory
-	ch <- c.suggestedMemory
+	ch <- c.requestedWorkloadCPU
+	ch <- c.suggestedWorkloadCPU
+	ch <- c.requestedWorkloadMemory
+	ch <- c.suggestedWorkloadMemory
 	ch <- c.requestedContainerCPU
 	ch <- c.suggestedContainerCPU
 	ch <- c.requestedContainerMemory
@@ -144,10 +144,10 @@ func (c *OceanAWSResourceSuggestionsCollector) collectSuggestions(
 			spotinst.StringValue(suggestion.ResourceName),
 		}
 
-		collectGaugeValue(ch, c.requestedCPU, spotinst.Float64Value(suggestion.RequestedCPU), labelValues)
-		collectGaugeValue(ch, c.suggestedCPU, spotinst.Float64Value(suggestion.SuggestedCPU), labelValues)
-		collectGaugeValue(ch, c.requestedMemory, spotinst.Float64Value(suggestion.RequestedMemory), labelValues)
-		collectGaugeValue(ch, c.suggestedMemory, spotinst.Float64Value(suggestion.SuggestedMemory), labelValues)
+		collectGaugeValue(ch, c.requestedWorkloadCPU, spotinst.Float64Value(suggestion.RequestedCPU), labelValues)
+		collectGaugeValue(ch, c.suggestedWorkloadCPU, spotinst.Float64Value(suggestion.SuggestedCPU), labelValues)
+		collectGaugeValue(ch, c.requestedWorkloadMemory, spotinst.Float64Value(suggestion.RequestedMemory), labelValues)
+		collectGaugeValue(ch, c.suggestedWorkloadMemory, spotinst.Float64Value(suggestion.SuggestedMemory), labelValues)
 
 		c.collectContainerSuggestions(ch, suggestion.Containers, labelValues)
 	}

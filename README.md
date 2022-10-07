@@ -29,6 +29,8 @@ All metrics are gauge values. The values of CPU metrics are in milli-CPU,
 memory values are in MiB and cost values are in $USD. Cost metrics display the
 running costs of the current month and are reset on every 1st.
 
+### Samples
+
 ```
 spotinst_ocean_aws_cluster_cost{ocean="o-12345678"} 301.86862
 spotinst_ocean_aws_daemonset_cost{name="kube-proxy",namespace="kube-system",ocean="o-12345678"} 3.4616985

@@ -13,6 +13,7 @@ COPY Makefile Makefile
 RUN go mod download
 
 COPY *.go ./
+COPY pkg/ pkg/
 
 RUN make build
 

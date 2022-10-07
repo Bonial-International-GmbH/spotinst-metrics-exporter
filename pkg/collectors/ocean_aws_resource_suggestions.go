@@ -2,6 +2,7 @@ package collectors
 
 import (
 	"context"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
@@ -139,7 +140,7 @@ func (c *OceanAWSResourceSuggestionsCollector) collectSuggestions(
 	for _, suggestion := range suggestions {
 		labelValues := []string{
 			oceanID,
-			spotinst.StringValue(suggestion.ResourceType),
+			strings.ToLower(spotinst.StringValue(suggestion.ResourceType)),
 			spotinst.StringValue(suggestion.Namespace),
 			spotinst.StringValue(suggestion.ResourceName),
 		}

@@ -132,11 +132,11 @@ func (c *OceanAWSResourceSuggestionsCollector) Collect(ch chan<- prometheus.Metr
 			continue
 		}
 
-		c.collectSuggestions(ch, output.Suggestions, clusterID)
+		c.collectWorkloadSuggestions(ch, output.Suggestions, clusterID)
 	}
 }
 
-func (c *OceanAWSResourceSuggestionsCollector) collectSuggestions(
+func (c *OceanAWSResourceSuggestionsCollector) collectWorkloadSuggestions(
 	ch chan<- prometheus.Metric,
 	suggestions []*aws.ResourceSuggestion,
 	oceanID string,

@@ -1,12 +1,7 @@
 // Package collectors contains Prometheus collectors for Spotinst metrics.
 package collectors
 
-import (
-	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/log"
-	"github.com/prometheus/client_golang/prometheus"
-)
-
-var logger = log.Logger().WithName("collectors")
+import "github.com/prometheus/client_golang/prometheus"
 
 func collectGaugeValue(
 	ch chan<- prometheus.Metric,

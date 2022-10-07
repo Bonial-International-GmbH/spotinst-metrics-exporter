@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spotinst/spotinst-sdk-go/service/mcs"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
@@ -21,6 +22,7 @@ type OceanAWSClusterCostsClient interface {
 // Spotinst Ocean clusters on AWS.
 type OceanAWSClusterCostsCollector struct {
 	ctx             context.Context
+	logger          logr.Logger
 	client          OceanAWSClusterCostsClient
 	clusters        []*aws.Cluster
 	clusterCost     *prometheus.Desc
@@ -35,11 +37,13 @@ type OceanAWSClusterCostsCollector struct {
 // for collecting the costs of the provided list of Ocean clusters.
 func NewOceanAWSClusterCostsCollector(
 	ctx context.Context,
+	logger logr.Logger,
 	client mcs.Service,
 	clusters []*aws.Cluster,
 ) *OceanAWSClusterCostsCollector {
 	collector := &OceanAWSClusterCostsCollector{
 		ctx:      ctx,
+		logger:   logger,
 		client:   client,
 		clusters: clusters,
 		clusterCost: prometheus.NewDesc(
@@ -113,7 +117,7 @@ func (c *OceanAWSClusterCostsCollector) Collect(ch chan<- prometheus.Metric) {
 
 		output, err := c.client.GetClusterCosts(c.ctx, input)
 		if err != nil {
-			logger.Error(err, "failed to fetch cluster costs", "ocean", clusterID)
+			c.logger.Error(err, "failed to fetch cluster costs", "ocean", clusterID)
 			continue
 		}
 
@@ -145,14 +149,14 @@ func (c *OceanAWSClusterCostsCollector) collectNamespaceCosts(
 
 		collectGaugeValue(ch, c.namespaceCost, spotinst.Float64Value(namespace.Cost), labelValues)
 
-		collectWorkloadCosts(ch, c.deploymentCost, namespace.Deployments, labelValues)
-		collectWorkloadCosts(ch, c.daemonSetCost, namespace.DaemonSets, labelValues)
-		collectWorkloadCosts(ch, c.statefulSetCost, namespace.StatefulSets, labelValues)
-		collectWorkloadCosts(ch, c.jobCost, namespace.Jobs, labelValues)
+		c.collectWorkloadCosts(ch, c.deploymentCost, namespace.Deployments, labelValues)
+		c.collectWorkloadCosts(ch, c.daemonSetCost, namespace.DaemonSets, labelValues)
+		c.collectWorkloadCosts(ch, c.statefulSetCost, namespace.StatefulSets, labelValues)
+		c.collectWorkloadCosts(ch, c.jobCost, namespace.Jobs, labelValues)
 	}
 }
 
-func collectWorkloadCosts(
+func (c *OceanAWSClusterCostsCollector) collectWorkloadCosts(
 	ch chan<- prometheus.Metric,
 	desc *prometheus.Desc,
 	resources []*mcs.Resource,

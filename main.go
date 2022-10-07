@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/collectors"
-	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/log"
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/prometheus/client_golang/prometheus"
@@ -33,9 +32,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	log.SetLogger(zapr.NewLogger(zapLog))
-
-	logger = log.Logger()
+	logger = zapr.NewLogger(zapLog)
 }
 
 func main() {
@@ -57,8 +54,8 @@ func main() {
 	}
 
 	registry := prometheus.NewRegistry()
-	registry.MustRegister(collectors.NewOceanAWSClusterCostsCollector(ctx, mcsClient, clusters))
-	registry.MustRegister(collectors.NewOceanAWSResourceSuggestionsCollector(ctx, oceanAWSClient, clusters))
+	registry.MustRegister(collectors.NewOceanAWSClusterCostsCollector(ctx, logger, mcsClient, clusters))
+	registry.MustRegister(collectors.NewOceanAWSResourceSuggestionsCollector(ctx, logger, oceanAWSClient, clusters))
 
 	handler := http.NewServeMux()
 	handler.HandleFunc("/healthz", healthzHandler)

@@ -6,11 +6,13 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-logr/zapr"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"go.uber.org/zap"
 )
 
 type mockOceanAWSResourceSuggestionsClient struct {
@@ -202,10 +204,12 @@ func TestOceanAWSResourceSuggestionsCollector(t *testing.T) {
 		},
 	}
 
+	logger := zapr.NewLogger(zap.NewNop())
+
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
 			ctx := context.Background()
-			collector := NewOceanAWSResourceSuggestionsCollector(ctx, testCase.client(), testCase.clusters)
+			collector := NewOceanAWSResourceSuggestionsCollector(ctx, logger, testCase.client(), testCase.clusters)
 
 			assert.NoError(t, testutil.CollectAndCompare(collector, strings.NewReader(testCase.expected)))
 		})

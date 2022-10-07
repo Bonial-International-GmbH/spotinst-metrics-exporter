@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spotinst/spotinst-sdk-go/service/ocean/providers/aws"
 	"github.com/spotinst/spotinst-sdk-go/spotinst"
@@ -24,6 +25,7 @@ type OceanAWSResourceSuggestionsClient interface {
 // resource suggestions of Spotinst Ocean clusters on AWS.
 type OceanAWSResourceSuggestionsCollector struct {
 	ctx                      context.Context
+	logger                   logr.Logger
 	client                   OceanAWSResourceSuggestionsClient
 	clusters                 []*aws.Cluster
 	requestedWorkloadCPU     *prometheus.Desc
@@ -41,11 +43,13 @@ type OceanAWSResourceSuggestionsCollector struct {
 // for the provided list of Ocean clusters.
 func NewOceanAWSResourceSuggestionsCollector(
 	ctx context.Context,
+	logger logr.Logger,
 	client OceanAWSResourceSuggestionsClient,
 	clusters []*aws.Cluster,
 ) *OceanAWSResourceSuggestionsCollector {
 	collector := &OceanAWSResourceSuggestionsCollector{
 		ctx:      ctx,
+		logger:   logger,
 		client:   client,
 		clusters: clusters,
 		requestedWorkloadCPU: prometheus.NewDesc(
@@ -124,7 +128,7 @@ func (c *OceanAWSResourceSuggestionsCollector) Collect(ch chan<- prometheus.Metr
 
 		output, err := c.client.ListOceanResourceSuggestions(c.ctx, input)
 		if err != nil {
-			logger.Error(err, "failed to list resource suggestions", "ocean", clusterID)
+			c.logger.Error(err, "failed to list resource suggestions", "ocean", clusterID)
 			continue
 		}
 

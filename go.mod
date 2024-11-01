@@ -7,7 +7,7 @@ require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/prometheus/client_golang v1.20.2
 	github.com/spf13/pflag v1.0.5
-	github.com/spotinst/spotinst-sdk-go v1.367.0
+	github.com/spotinst/spotinst-sdk-go v1.372.0
 	github.com/stretchr/testify v1.9.0
 	go.uber.org/zap v1.27.0
 )

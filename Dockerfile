@@ -17,7 +17,7 @@ COPY pkg/ pkg/
 
 RUN make build
 
-FROM alpine:3.18
+FROM alpine:3.22
 
 RUN apk --update --no-cache add ca-certificates
 

@@ -3,7 +3,7 @@ module github.com/Bonial-International-GmbH/spotinst-metrics-exporter
 go 1.25
 
 require (
-	github.com/go-logr/logr v1.4.3
+	github.com/go-logr/logr v1.4.4
 	github.com/go-logr/zapr v1.3.0
 	github.com/prometheus/client_golang v1.23.0
 	github.com/spf13/pflag v1.0.10

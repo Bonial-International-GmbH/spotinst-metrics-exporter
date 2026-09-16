@@ -1,4 +1,4 @@
-module github.com/Bonial-International-GmbH/spotinst-metrics-exporter
+module github.com/bonial-oss/spotinst-metrics-exporter
 
 go 1.25.0
 

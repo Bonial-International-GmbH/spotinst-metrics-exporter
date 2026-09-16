@@ -1,8 +1,8 @@
 # spotinst-metrics-exporter
 
-[![Build Status](https://github.com/Bonial-International-GmbH/spotinst-metrics-exporter/actions/workflows/ci.yml/badge.svg)](https://github.com/Bonial-International-GmbH/spotinst-metrics-exporter/actions/workflows/ci.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/Bonial-International-GmbH/spotinst-metrics-exporter)](https://goreportcard.com/report/github.com/Bonial-International-GmbH/spotinst-metrics-exporter)
-![License](https://img.shields.io/github/license/Bonial-International-GmbH/spotinst-metrics-exporter)
+[![Build Status](https://github.com/bonial-oss/spotinst-metrics-exporter/actions/workflows/ci.yml/badge.svg)](https://github.com/bonial-oss/spotinst-metrics-exporter/actions/workflows/ci.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/bonial-oss/spotinst-metrics-exporter)](https://goreportcard.com/report/github.com/bonial-oss/spotinst-metrics-exporter)
+![License](https://img.shields.io/github/license/bonial-oss/spotinst-metrics-exporter)
 
 A prometheus exporter for metrics from Spotinst.
 
@@ -32,7 +32,7 @@ First, add the helm repository:
 
 ```sh
 helm repo add spotinst-metrics-exporter \
-  https://bonial-international-gmbh.github.io/spotinst-metrics-exporter
+  https://bonial-oss.github.io/spotinst-metrics-exporter
 ```
 
 Create a `values.yaml` and add a `spotinst` section with the account ID and
@@ -46,7 +46,7 @@ spotinst:
 ```
 
 For more helm configuration options have a look into the [`values.yaml`
-defaults](https://github.com/Bonial-International-GmbH/spotinst-metrics-exporter/blob/main/charts/spotinst-metrics-exporter/values.yaml).
+defaults](https://github.com/bonial-oss/spotinst-metrics-exporter/blob/main/charts/spotinst-metrics-exporter/values.yaml).
 
 Finally use helm to install the metrics exporter:
 

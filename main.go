@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/collectors"
-	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/labels"
+	"github.com/bonial-oss/spotinst-metrics-exporter/pkg/collectors"
+	"github.com/bonial-oss/spotinst-metrics-exporter/pkg/labels"
 	"github.com/go-logr/logr"
 	"github.com/go-logr/zapr"
 	"github.com/prometheus/client_golang/prometheus"

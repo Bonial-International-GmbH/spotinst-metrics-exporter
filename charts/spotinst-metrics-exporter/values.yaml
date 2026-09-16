@@ -3,7 +3,7 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/bonial-international-gmbh/spotinst-metrics-exporter
+  repository: ghcr.io/bonial-oss/spotinst-metrics-exporter
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""

@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/labels"
+	"github.com/bonial-oss/spotinst-metrics-exporter/pkg/labels"
 	"github.com/go-logr/logr"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/spotinst/spotinst-sdk-go/service/mcs"

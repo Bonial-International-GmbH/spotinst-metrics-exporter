@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Bonial-International-GmbH/spotinst-metrics-exporter/pkg/labels"
+	"github.com/bonial-oss/spotinst-metrics-exporter/pkg/labels"
 	"github.com/go-logr/zapr"
 	"github.com/prometheus/client_golang/prometheus/testutil"
 	"github.com/spotinst/spotinst-sdk-go/service/mcs"
